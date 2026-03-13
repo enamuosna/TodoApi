@@ -1,0 +1,36 @@
+version: "3.9"
+
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: todo-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: TodoDb
+
+  todoapi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: todo-api
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mongodb
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      MongoDb__ConnectionString: mongodb://mongodb:27017
+      MongoDb__DatabaseName: TodoDb
+      MongoDb__TodoItemsCollectionName: TodoItems
+      MongoDb__UsersCollectionName: Users
+      Jwt__Key: "YourSuperSecretKey_ChangeThisInProduction_AtLeast32Chars!"
+      Jwt__Issuer: TodoApi
+      Jwt__Audience: TodoApiUsers
+
+volumes:
+  mongo-data:
